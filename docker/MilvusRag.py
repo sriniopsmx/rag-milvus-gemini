@@ -36,7 +36,7 @@ modelDimension= 384 # 768
 # In[3]:
 
 
-genai.configure(api_key="AIzaSyA0TpSBwP8EuxJoJf8dIqgkXU9b5QDDh9A" ) #os.environ["GOOGLE_API_KEY"])
+genai.configure(os.environ["GOOGLE_API_KEY"])
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 

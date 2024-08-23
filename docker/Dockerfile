@@ -6,7 +6,10 @@ WORKDIR /app
 
 # Copy the requirements file into the container
 COPY requirements.txt .
+COPY MilvusRag.py .
 
+#RUN apt update
+#RUN apt install -y python3-brlapi
 # Install the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -14,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose the port your application listens on (if applicable)
-# EXPOSE 8000
+EXPOSE 8501
 
 # Set the command to run your application
-CMD ["python", "app.py"]
+CMD ["streamlit","run", "MilvusRag.py"]
