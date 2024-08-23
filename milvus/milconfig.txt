@@ -1,0 +1,4 @@
+ETCD_USE_EMBED=true 
+ETCD_DATA_DIR=/var/lib/milvus/etcd 
+ETCD_CONFIG_PATH=/milvus/configs/embedEtcd.yaml 
+COMMON_STORAGETYPE=local
