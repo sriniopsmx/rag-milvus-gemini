@@ -1,10 +1,11 @@
 apiVersion: v1
 data:
-  COMMON_STORAGETYPE: local
-  ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
-  ETCD_DATA_DIR: /var/lib/milvus/etcd
-  ETCD_USE_EMBED: "true"
-  GOOGLE_API_KEY: "MOVED TO SECRET"
+  MIL_HOST: "192.168.1.44"
+  MIL_URI: 'http://192.168.1.44:19530'
+  MIL_DB_NAME: "milvus_demo"
+  MIL_COLLECTION: "demo_collection"
+  MIL_MODEL_DIM: "384"
+  ACTIVITY_LOG_FILE: "/tmp/activitylog/activity.csv" # To Do move to Google-Sheet
 kind: ConfigMap
 metadata:
   creationTimestamp: "2024-08-23T01:38:58Z"

@@ -4,7 +4,7 @@
 # ### Program to Get Context for an Issue
 # End result is a Query that can be send to an LLM
 
-# In[1]:
+# In[55]:
 
 
 # Mivus
@@ -18,30 +18,48 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import pandas as pd
 import google.generativeai as genai
+#import GoogleGenerativeAI, HarmCategory, HarmBlockThreshold 
 #import PIL.Image
 import os
 import streamlit as st 
 import hmac
 
 
-# In[2]:
+# In[75]:
 
 
-milHost="192.168.1.44"
-milURI='http://192.168.1.44:19530'
-milDBname="milvus_demo"
-milCollection="demo_collection"
-modelDimension= 384 # 768
+milHost=os.environ["MIL_HOST"]
+milURI=os.environ["MIL_URI"]
+milDBname=os.environ["MIL_DB_NAME"]
+milCollection=os.environ["MIL_COLLECTION"]
+modelDimension= os.environ["MIL_MODEL_DIM"]
+
+#milHost="192.168.1.44"
+#milURI='http://192.168.1.44:19530'
+#milDBname="milvus_demo"
+#milCollection="demo_collection"
+#modelDimension= 384 # 768
+activityLogFile= os.environ["ACTIVITY_LOG_FILE"]
+google_API_key= os.environ["GOOGLE_API_KEY"]
+geminModel="gemini-1.5-flash"
 
 
-# In[3]:
+# In[76]:
 
 
-genai.configure(api_key= os.environ["GOOGLE_API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash")
+generationConfig = {
+	"temperature": 0,
+}
 
 
-# In[4]:
+# In[77]:
+
+
+genai.configure(api_key= google_API_key)
+model = genai.GenerativeModel(geminModel, system_instruction="You an expert in Open Source Spinnaker. Please answer with the possible causes and resolutions to the issue in 5 to 10 lines.")
+
+
+# In[78]:
 
 
 # This is model being used for RAG, not for inference
@@ -58,7 +76,7 @@ changeHappened = False
 answer = ""
 
 
-# In[5]:
+# In[79]:
 
 
 # I am tokenizing only the incident description
@@ -90,7 +108,7 @@ def encode_text(batch):
     return batch
 
 
-# In[6]:
+# In[80]:
 
 
 def get_response(basePrompt, changeHappened):
@@ -114,15 +132,10 @@ def get_response(basePrompt, changeHappened):
         limit=5,  # How many search results to output
         output_fields=["Responses", "Context"],  # Include these fields in search results
     )
-    
-    # Prepare PROMPT
-    if changeHappened :
-       ragPrompt="You an expert in Open Source Spinnaker. A user is facing this issue:" + basePrompt + ". Here are some responses to similar issues:"
-    else:    
-       ragPrompt="You an expert in Open Source Spinnaker. A user is facing this issue:" + basePrompt + changeStr + ". Here are some responses to similar issues:"
+
+    # Prepare prompt info from RAG DB
+    ragInfo=""
     for q, res in zip(questions["Incident Description"], search_results):
-        #print(basePrompt)
-        #print("\ncontext:\n")
         for r in res:
             ans= r["entity"]["Responses"]
             ctxt = r["entity"]["Context"]
@@ -131,13 +144,25 @@ def get_response(basePrompt, changeHappened):
             ragData.loc[len(ragData.index)] = [ score, ans, ctxt ] 
             if score > 0.6:
                 #print(f"{ans}\n") 
-                ragPrompt += ans + "\n"
+                ragInfo += ans + "\n"
                 if len(ctxt) > 10 :
-                    ragPrompt += ctxt + "\n"
-    return model.generate_content(ragPrompt), ragPrompt
+                    ragInfo += ctxt + "\n"
+
+    
+    # Prepare PROMPT
+    if changeHappened :
+       ragPrompt="A user is facing this issue:" + basePrompt + " Here are some responses to similar issues:"
+    else:    
+       ragPrompt="A user is facing this issue:" + basePrompt + changeStr + " Here are some responses to similar issues:"
+
+    ragPrompt += ragInfo
+    
+    if len(ragInfo) < 10 :
+        return "**There was'nt enough information in current experience DB to get customer specific response.Please ensure that the DB is updated and reloaded**", ragPrompt
+    return model.generate_content(ragPrompt, generation_config=generationConfig).text, ragPrompt
 
 
-# In[7]:
+# In[81]:
 
 
 def check_password():
@@ -172,7 +197,21 @@ st.set_page_config(layout="wide")
 #st.write("Here goes your normal Streamlit app...")
 
 
-# In[8]:
+# In[82]:
+
+
+#response, ragPrompt = get_response("spinnaker deployment giving 404", changeHappened)
+#response, ragPrompt = get_response("the sky turned white", changeHappened)
+#ragPrompt, response
+
+
+# In[70]:
+
+
+
+
+
+# In[40]:
 
 
 colA, colB, colC = st.columns([.50, .10, .40])
@@ -184,12 +223,12 @@ with colB:
     if st.button("Press", key="button"):
         response, ragPrompt = get_response(basePrompt, changeHappened)
         print("RAGPrompt:", ragPrompt)
-        answer = response.text
+        answer = response
 with colA:
     st.markdown(answer)
 
 
-# In[9]:
+# In[41]:
 
 
 # df.append({'Relevance':0.6, 'Issue':'hello','Context':'newinfo'})
@@ -199,7 +238,18 @@ with colC:
   st.write("Final Prompt:" + ragPrompt)
 
 
-# In[10]:
+# In[85]:
+
+
+with open(activityLogFile, "a") as outFile:
+    # Writing data to a file
+    if len(answer) > 0 :
+     answerInOneLine = answer.replace("\n", "")
+     answerInOneLine = answerInOneLine.replace("*", "")
+     outFile.write(basePrompt +"," + answerInOneLine +"\n")
+
+
+# In[86]:
 
 
 # for q, res in zip(questions["Incident Description"], search_results):
@@ -214,6 +264,12 @@ with colC:
 #             print(f"Ans: {ans}\n") 
 #             print(f"\tContext: {ctxt}\n")
 #             print(f"\tScore: {score}\n")
+
+
+# In[91]:
+
+
+
 
 
 # In[11]:

@@ -19,6 +19,8 @@ spec:
       - envFrom:
         - configMapRef:
             name: milconfig
+        - secretRef:
+            name: milrag-google-api-key
         image: ksrinimba/milrag:1.2.1
         imagePullPolicy: IfNotPresent
         name: milrag
@@ -29,6 +31,8 @@ spec:
         - mountPath: /app/.streamlit/secrets.toml 
           name: streamlitpass
           subPath: secrets.toml 
+        - mountPath: /tmp/activitylog
+          name: log-pv-storage
       restartPolicy: Always
       volumes:
       - configMap:
@@ -39,4 +43,7 @@ spec:
           defaultMode: 420
           name: streamlitpass
         name: streamlitpass
+      - name: log-pv-storage
+        persistentVolumeClaim:
+          claimName: activitylog
 
