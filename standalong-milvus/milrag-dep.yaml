@@ -16,30 +16,27 @@ spec:
       name: milrag-standalone
     spec:
       containers:
-      #- command:
-      #  - milrag
-      #  - run
-      #  - standalone
       - envFrom:
         - configMapRef:
             name: milconfig
-        image: ksrinimba/milrag:1.1
+        image: ksrinimba/milrag:1.2.1
         imagePullPolicy: IfNotPresent
         name: milrag
-        #volumeMounts:
-        #- mountPath: /milrag/configs
-        #  name: embedetcd
+        volumeMounts:
+        - mountPath: /app/MilvusRag.py
+          name: milragpy
+          subPath: MilvusRag.py
+        - mountPath: /app/.streamlit/secrets.toml 
+          name: streamlitpass
+          subPath: secrets.toml 
       restartPolicy: Always
-      #volumes:
-      #- configMap:
-      #    defaultMode: 420
-      #    name: milconfig
-      #  name: milconfig
-      #- configMap: # Contains embedEtcd.yaml and user.yaml
-      #    defaultMode: 420
-      #    name: embedetcd
-      #  name: embedetcd
-      #- name: datadir # To be changed to a PVC
-      #  emptyDir:
-      #    sizeLimit: 5Gi
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: milragpy
+        name: milragpy
+      - configMap: # Contains embedEtcd.yaml and user.yaml
+          defaultMode: 420
+          name: streamlitpass
+        name: streamlitpass
 
