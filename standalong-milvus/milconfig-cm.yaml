@@ -1,9 +1,9 @@
 apiVersion: v1
 data:
-  MIL_HOST: "192.168.1.44"
-  MIL_URI: 'http://192.168.1.44:19530'
+  MIL_HOST: "mil-milvus"
+  MIL_URI: 'http://mil-milvus.mil-ns:19530'
   MIL_DB_NAME: "milvus_demo"
-  MIL_COLLECTION: "demo_collection"
+  MIL_COLLECTION: "cisco_collection"
   MIL_MODEL_DIM: "384"
   ACTIVITY_LOG_FILE: "/tmp/activitylog/activity.csv" # To Do move to Google-Sheet
 kind: ConfigMap

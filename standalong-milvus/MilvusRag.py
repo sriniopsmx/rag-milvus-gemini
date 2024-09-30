@@ -246,6 +246,7 @@ with open(activityLogFile, "a") as outFile:
     if len(answer) > 0 :
      answerInOneLine = answer.replace("\n", "")
      answerInOneLine = answerInOneLine.replace("*", "")
+     answerInOneLine = answerInOneLine.replace(",", ";") # Replace comma with semi-colon so CSV format is retained
      outFile.write(basePrompt +"," + answerInOneLine +"\n")
 
 
