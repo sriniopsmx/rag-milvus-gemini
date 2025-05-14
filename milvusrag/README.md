@@ -8,3 +8,6 @@ On ryzon7:
 python version3.9.19
 - cd /home/srini/AI-ML/notebooks
 - ```jupyter nbconvert --to script MilvusRag.ipynb;streamlit run MilvusRag.py```
+
+
+** Milvus102.ipynb - This file contains code for loading the XLS file data into Milvus after cleaning the data.
